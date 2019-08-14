@@ -579,16 +579,20 @@ endif
 
 upload_fs: fs
 ifeq ($(ARDUINO_ARCH),esp8266)
-	ifeq ($(ESP8266_PROCESS),$(filter $(ESP8266_PROCESS),NEW))
-	else
-		$(ESPTOOL) $(ESPTOOL_VERBOSE) -cd $(UPLOAD_RESETMETHOD) -cb $(UPLOAD_SPEED) -cp $(SERIAL_PORT) -ca $(SPIFFS_START) -cf $(FS_IMAGE)
-	endif
+	# ifeq ($(ESP8266_PROCESS),$(filter $(ESP8266_PROCESS),NEW))
+	# else
+		$(PYTHON) $(UPLOADTOOL) --chip esp8266 --port $(SERIAL_PORT) --baud $(UPLOAD_SPEED) write_flash $(SPIFFS_START) $(FS_IMAGE) --end
+	# endif
 else
 	@echo upload_fs : No SPIFFS function available for $(ARDUINO_ARCH)
 endif
 
 ota: $(BUILD_OUT)/$(TARGET).bin
 	$(ESPOTA) -i $(OTA_IP) -p $(OTA_PORT) -a $(OTA_AUTH) -f $(BUILD_OUT)/$(TARGET).bin
+
+ota_fs: fs
+	$(ESPOTA) -i $(OTA_IP) -p $(OTA_PORT) -a $(OTA_AUTH) --spiffs -f $(FS_IMAGE)
+
 
 term:
 ifeq ($(LOG_SERIAL_TO_FILE), yes)
